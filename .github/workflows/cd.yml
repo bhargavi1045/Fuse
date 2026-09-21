@@ -1,0 +1,34 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    name: Deploy backend to Render
+    if: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Trigger backend deploy hook
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Deploying backend to Render..."
+          curl -X POST "$DEPLOY_HOOK_URL"
+
+  deploy-frontend:
+    name: Deploy frontend to Render
+    if: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Trigger frontend deploy hook
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Deploying frontend to Render..."
+          curl -X POST "$DEPLOY_HOOK_URL"

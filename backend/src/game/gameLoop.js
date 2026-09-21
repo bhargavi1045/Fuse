@@ -133,10 +133,11 @@ function createGameLoop(state, { onBroadcast, onGameOver } = {}) {
   }
 
   return {
+    INPUT_TYPES,
     enqueueInput,
     start,
     stop,
-    tick, 
+    tick,
   };
 }
 
