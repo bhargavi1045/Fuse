@@ -9,7 +9,7 @@ on:
 jobs:
   deploy-backend:
     name: Deploy backend to Render
-    if: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -17,12 +17,16 @@ jobs:
         env:
           DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
         run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "Backend deploy hook is not configured; skipping deployment."
+            exit 0
+          fi
           echo "Deploying backend to Render..."
-          curl -X POST "$DEPLOY_HOOK_URL"
+          curl --fail --show-error --silent -X POST "$DEPLOY_HOOK_URL"
 
   deploy-frontend:
     name: Deploy frontend to Render
-    if: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -30,5 +34,9 @@ jobs:
         env:
           DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
         run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "Frontend deploy hook is not configured; skipping deployment."
+            exit 0
+          fi
           echo "Deploying frontend to Render..."
-          curl -X POST "$DEPLOY_HOOK_URL"
+          curl --fail --show-error --silent -X POST "$DEPLOY_HOOK_URL"
